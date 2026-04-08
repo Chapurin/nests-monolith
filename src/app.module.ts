@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
-import { loggingMiddleware, PrismaModule } from 'nestjs-prisma';
+import {
+  PrismaModule,
+  providePrismaClientExceptionFilter,
+} from 'nestjs-prisma';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     PrismaModule.forRoot({
       isGlobal: true,
-      prismaServiceOptions: {
-        middlewares: [loggingMiddleware()], // Улучшение: добавляем логирование запросов
-      },
     }),
+    UserModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [providePrismaClientExceptionFilter()],
 })
 export class AppModule {}
