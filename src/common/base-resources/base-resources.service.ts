@@ -1,39 +1,62 @@
-import { PrismaService } from 'nestjs-prisma';
-import { CreateUserDto } from '../../dto/create-user.dto';
-import { UpdateUserDto } from '../../dto/update-user.dto';
 import { Injectable } from '@nestjs/common';
 
+export interface PrismaModel<
+  TEntity,
+  TCreateInput,
+  TFindUniqueArgs,
+  TUpdateArgs,
+  TDeleteArgs,
+> {
+  create(args: { data: TCreateInput }): Promise<TEntity>;
+  findMany(args?: unknown): Promise<TEntity[]>;
+  findUnique(args: TFindUniqueArgs): Promise<TEntity | null>;
+  update(args: TUpdateArgs): Promise<TEntity>;
+  delete(args: TDeleteArgs): Promise<TEntity>;
+}
+
 @Injectable()
-export class BaseResourcesService {
+export class BaseResourcesService<
+  TEntity,
+  TCreateDto,
+  TUpdateDto,
+  TFindUniqueArgs,
+  TUpdateArgs,
+  TDeleteArgs,
+> {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly model: string,
+    protected readonly model: PrismaModel<
+      TEntity,
+      TCreateDto,
+      TFindUniqueArgs,
+      TUpdateArgs,
+      TDeleteArgs
+    >,
   ) {}
 
-  createUser(dto: CreateUserDto) {
-    return this.prisma[this.model].create({ data: dto });
+  createUser(dto: TCreateDto): Promise<TEntity> {
+    return this.model.create({ data: dto });
   }
 
-  findAll() {
-    return this.prisma[this.model].findMany();
+  findAll(): Promise<TEntity[]> {
+    return this.model.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma[this.model].findUnique({
+  findOne(id: number): Promise<TEntity | null> {
+    return this.model.findUnique({
       where: { id },
-    });
+    } as TFindUniqueArgs);
   }
 
-  update(id: number, data: UpdateUserDto) {
-    return this.prisma[this.model].update({
+  update(id: number, data: TUpdateDto): Promise<TEntity> {
+    return this.model.update({
       where: { id },
       data,
-    });
+    } as TUpdateArgs);
   }
 
-  remove(id: number) {
-    return this.prisma[this.model].delete({
+  remove(id: number): Promise<TEntity> {
+    return this.model.delete({
       where: { id },
-    });
+    } as TDeleteArgs);
   }
 }
