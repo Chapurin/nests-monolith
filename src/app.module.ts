@@ -6,6 +6,9 @@ import {
 } from 'nestjs-prisma';
 import { UserModule } from './user/user.module';
 import { LoggerModule } from 'nestjs-pino';
+import { OrderModule } from './order/order.module';
+import { BrandModule } from './brand/brand.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { LoggerModule } from 'nestjs-pino';
         },
       },
     }),
+    OrderModule,
+    ProductModule,
+    BrandModule,
   ],
   controllers: [],
   providers: [providePrismaClientExceptionFilter()],

@@ -5,8 +5,8 @@ import {
   PrismaModel,
 } from '../common/base-resources/base-resources.service';
 import { Prisma, User } from '@prisma/client';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService extends BaseResourcesService<
