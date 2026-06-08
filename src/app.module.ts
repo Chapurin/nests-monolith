@@ -10,6 +10,7 @@ import { OrderModule } from './order/order.module';
 import { BrandModule } from './brand/brand.module';
 import { ProductModule } from './product/product.module';
 import { AuthModule } from './auth/auth.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AuthModule } from './auth/auth.module';
     ProductModule,
     BrandModule,
     AuthModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [providePrismaClientExceptionFilter()],
