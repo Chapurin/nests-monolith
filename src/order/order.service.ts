@@ -2,13 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order, PrismaClient } from '@prisma/client';
+import { Order } from '@prisma/client';
+import Redis from 'ioredis';
 
 @Injectable()
 export class OrderService {
   constructor(
     private prisma: PrismaService,
-    @Inject('REDIS_CLIENT') private readonly redisClient: PrismaClient,
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
