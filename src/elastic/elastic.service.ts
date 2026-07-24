@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { IProductWithBrand } from '../common/types/Product';
 
 @Injectable()
 export class ElasticService implements OnModuleInit {
-  private readonly PRODUCTS_WITH_BRANDS_INDEX = 'PRODUCTS_WITH_BRANDS_INDEX';
+  private readonly PRODUCTS_WITH_BRANDS_INDEX = 'products_with_brands_index';
 
   constructor(
     private readonly elasticsearchService: ElasticsearchService,
@@ -21,38 +21,36 @@ export class ElasticService implements OnModuleInit {
       if (!indexExists) {
         await this.elasticsearchService.indices.create({
           index: this.PRODUCTS_WITH_BRANDS_INDEX,
-          body: {
-            settings: {
-              analysis: {
-                tokenizer: {
-                  edge_ngram_tokenizer: {
-                    type: 'edge_ngram',
-                    min_gram: 1,
-                    max_gram: 25,
-                    token_chars: ['letter', 'digit'],
-                  },
+          settings: {
+            analysis: {
+              tokenizer: {
+                edge_ngram_tokenizer: {
+                  type: 'edge_ngram',
+                  min_gram: 1,
+                  max_gram: 25,
+                  token_chars: ['letter', 'digit'],
                 },
-                analyzer: {
-                  edge_ngram_analyzer: {
-                    type: 'custom',
-                    tokenizer: 'edge_ngram_tokenizer',
-                  },
+              },
+              analyzer: {
+                edge_ngram_analyzer: {
+                  type: 'custom',
+                  tokenizer: 'edge_ngram_tokenizer',
                 },
               },
             },
-            mappings: {
-              properties: {
-                title: {
-                  type: 'text',
-                  analyzer: 'edge_ngram_analyzer',
-                },
-                description: {
-                  type: 'text',
-                },
-                brand: {
-                  properties: {
-                    title: 'text',
-                  },
+          },
+          mappings: {
+            properties: {
+              title: {
+                type: 'text',
+                analyzer: 'edge_ngram_analyzer',
+              },
+              description: {
+                type: 'text',
+              },
+              brand: {
+                properties: {
+                  title: { type: 'text' },
                 },
               },
             },
@@ -122,12 +120,10 @@ export class ElasticService implements OnModuleInit {
   async searchProductsWithBrands(query: string) {
     const result = await this.elasticsearchService.search({
       index: this.PRODUCTS_WITH_BRANDS_INDEX,
-      body: {
-        query: {
-          multi_search: {
-            query,
-            fields: ['title', 'description', 'brand.title'],
-          },
+      query: {
+        multi_match: {
+          query,
+          fields: ['title', 'description', 'brand.title'],
         },
       },
     });
