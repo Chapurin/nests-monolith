@@ -12,6 +12,7 @@ import { ProductModule } from './product/product.module';
 import { AuthModule } from './auth/auth.module';
 import { RedisModule } from './redis/redis.module';
 import { ElasticModule } from './elastic/elastic.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ElasticModule } from './elastic/elastic.module';
     AuthModule,
     RedisModule,
     ElasticModule,
+    StripeModule,
   ],
   controllers: [],
   providers: [providePrismaClientExceptionFilter()],
