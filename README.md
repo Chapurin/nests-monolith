@@ -1,98 +1,91 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# nodejs-monolith
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Учебный монолитный бэкенд на NestJS: каталог товаров с брендами, заказы, JWT-аутентификация, кэш на Redis, полнотекстовый поиск на Elasticsearch и приём платежей через Stripe.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Стек
 
-## Description
+- [NestJS](https://nestjs.com/) v11 (platform-express)
+- [Prisma](https://www.prisma.io/) v6 + PostgreSQL (через `nestjs-prisma`)
+- Passport (`local` + `jwt` стратегии), `@nestjs/jwt`, `bcrypt`
+- [ioredis](https://github.com/redis/ioredis) — кэш списка заказов
+- [Elasticsearch](https://www.elastic.co/) — префиксный поиск по товарам/брендам
+- [Stripe](https://stripe.com/) — payment intents
+- `class-validator` / `class-transformer` — валидация DTO
+- `nestjs-pino` — логирование
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Подробности по модулям, конвенциям и известным особенностям — в [CLAUDE.md](./CLAUDE.md).
 
-## Project setup
+## Требования
+
+- Node.js (версия зафиксирована в `.nvmrc`)
+- Docker + Docker Compose (Postgres, Redis, Elasticsearch)
+
+## Установка
 
 ```bash
-$ npm install
+npm install
+cp .env.example .env   # заполнить значениями ниже
+docker compose up -d
+npx prisma migrate deploy
 ```
 
-## Compile and run the project
+### Переменные окружения (`.env`)
+
+| Переменная | Обязательна | Описание |
+|---|---|---|
+| `DATABASE_URL` | да | строка подключения к Postgres, напр. `postgresql://user:password@localhost:5432/nodejs?schema=public` |
+| `JWT_SECRET` | да | секрет для подписи JWT |
+| `JWT_EXPIRES_IN` | да | время жизни токена (напр. `1d`) |
+| `ELASTICSEARCH_URL` | да | напр. `http://localhost:9200` |
+| `REDIS_HOST` | да | напр. `localhost` |
+| `REDIS_PORT` | да | напр. `6379` |
+| `STRIPE_SECRET_KEY` | да | секретный ключ Stripe |
+| `STRIPE_WEBHOOK_KEY` | нет | подпись вебхука Stripe (обработчик пока не реализован) |
+| `PORT` | нет | порт приложения, по умолчанию `3000` |
+
+`docker-compose.yml` поднимает Postgres (`5432`), Redis (`6379`) и Elasticsearch (`9200`) с параметрами, совместимыми со значениями по умолчанию выше.
+
+## Запуск
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev     # dev-сервер с watch
+npm run build && npm run start:prod   # production-сборка
 ```
 
-## Run tests
+API смонтировано под префиксом `/api` (напр. `POST /api/auth/login`, `GET /api/product`).
+
+## Полезные команды
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run typecheck   # tsc --noEmit
+npm run lint         # eslint --fix
+npm run format        # prettier --write
+npm run test           # unit-тесты (jest)
+npm run test:e2e         # e2e-тесты
 ```
 
-## Deployment
+## API
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Все роуты — под `/api`.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Модуль | Роуты |
+|---|---|
+| `auth` | `POST /auth/register`, `POST /auth/login`, `GET /auth/profile` |
+| `user` | `GET/POST /user`, `GET/PATCH/DELETE /user/:id` |
+| `product` | `GET/POST /product`, `GET/PATCH/DELETE /product/:id` |
+| `brand` | `GET/POST /brand`, `GET/PATCH/DELETE /brand/:id` |
+| `order` | `GET/POST /order`, `GET/PATCH/DELETE /order/:id` |
+| `elastic` | `POST /elastic/index-all-products`, `GET /elastic/indices`, `GET /elastic/search?q=` |
+| `stripe` | `POST /stripe/create-payment-intent`, `GET /stripe/payment-intent/:id` |
+
+## База данных
+
+Модели Prisma (`prisma/schema.prisma`): `User`, `Order`, `Product`, `Brand`, `OrderProduct` (join-таблица заказ↔товар). После изменения схемы:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate dev --name <описание>
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Лицензия
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED (учебный проект).
